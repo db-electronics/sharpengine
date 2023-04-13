@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33502.453
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpEngine.ConsoleTest", "SharpEngine.ConsoleTest\SharpEngine.ConsoleTest.csproj", "{69F9B796-DDFA-40A7-9A54-2320F635BD9F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpEngine", "SharpEngine\SharpEngine.csproj", "{F04A7342-A144-454A-8673-6BCBE3480918}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{69F9B796-DDFA-40A7-9A54-2320F635BD9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69F9B796-DDFA-40A7-9A54-2320F635BD9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69F9B796-DDFA-40A7-9A54-2320F635BD9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69F9B796-DDFA-40A7-9A54-2320F635BD9F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F04A7342-A144-454A-8673-6BCBE3480918}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F04A7342-A144-454A-8673-6BCBE3480918}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F04A7342-A144-454A-8673-6BCBE3480918}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F04A7342-A144-454A-8673-6BCBE3480918}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2045804A-B2F1-4E25-8297-CA7DAF6D9A36}
+	EndGlobalSection
+EndGlobal
