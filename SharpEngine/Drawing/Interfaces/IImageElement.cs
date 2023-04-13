@@ -4,7 +4,7 @@ using SharpEngine.Math;
 
 namespace SharpEngine.Drawing.Interfaces
 {
-    public interface ISpriteElement : IDrawingElement
+    public interface IImageElement : IDrawingElement
     {
         Bitmap Bitmap { get; set; }
         Vector2f Center { get; set; }

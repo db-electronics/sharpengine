@@ -5,7 +5,7 @@ using System.IO;
 
 namespace SharpEngine.Drawing
 {
-    public class SpriteElement : ISpriteElement
+    public class ImageElement : IImageElement
     {
         public string Tag { get; set; }
         public bool IsVisible { get; set; } = true;
@@ -28,9 +28,9 @@ namespace SharpEngine.Drawing
 
         private Image _image;
         //private Image _original;
-        //private Semaphore _semaphore = new(1,1);
+        private Semaphore _semaphore = new(1,1);
 
-        public SpriteElement(string tag, string path, Vector2f center, int priority)
+        public ImageElement(string tag, string path, Vector2f center, int priority)
         {
             _image = Image.FromFile(path);
             Priority = priority;
@@ -47,12 +47,14 @@ namespace SharpEngine.Drawing
         {
             switch (angle)
             {
+                case 360f:
                 case 0f:
                     if (mirror)
                         _image.RotateFlip(RotateFlipType.RotateNoneFlipX);
                     else
                         _image.RotateFlip(RotateFlipType.RotateNoneFlipNone);
                     break;
+                case -270f:
                 case 90f:
                     if (mirror)
                         _image.RotateFlip(RotateFlipType.Rotate90FlipX);
@@ -60,12 +62,14 @@ namespace SharpEngine.Drawing
                         _image.RotateFlip(RotateFlipType.Rotate90FlipNone);
                     SwapXY();
                     break;
+                case -180f:
                 case 180f:
                     if (mirror)
                         _image.RotateFlip(RotateFlipType.Rotate180FlipX);
                     else
                         _image.RotateFlip(RotateFlipType.Rotate180FlipNone);
                     break;
+                case -90f:
                 case 270f:
                     if (mirror)
                         _image.RotateFlip(RotateFlipType.Rotate270FlipX);
@@ -85,7 +89,8 @@ namespace SharpEngine.Drawing
 
         private void SwapXY()
         {
-            (_size.X, _size.Y) = (_size.Y, _size.X);
+            _size.SwapXY();
+            // recalculate the center coordinates
             Center = _center;
 
         }
@@ -105,12 +110,12 @@ namespace SharpEngine.Drawing
 
         public void Register()
         {
-            SharpEngine.RegisterElement<ISpriteElement>(this);
+            SharpEngine.RegisterElement<IImageElement>(this);
         }
 
         public void Dispose()
         {
-            SharpEngine.DisposeElement<ISpriteElement>(this);
+            SharpEngine.DisposeElement<IImageElement>(this);
         }
     }
 }

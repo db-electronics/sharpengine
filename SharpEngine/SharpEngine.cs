@@ -33,7 +33,9 @@ namespace SharpEngine
         public Color BackgroundColour { get; set; } = Color.Black;
         private static ConcurrentDictionary<string, ITextElement> TextElements { get; set; } = new();
         private static ConcurrentDictionary<string, IShapeElement> ShapeElements { get; set; } = new();
-        private static ConcurrentDictionary<string, ISpriteElement> SpriteElements { get; set; } = new();
+        private static ConcurrentDictionary<string, IImageElement> SpriteElements { get; set; } = new();
+
+        public ConcurrentDictionary<Keys, int> KeysDown { get; set; } = new();
 
         public SharpEngine(int screenX, int screenY, float refreshFrequency, string title)
         {
@@ -45,17 +47,30 @@ namespace SharpEngine
             // set the refresh frequency
             _timer.Interval = (1 / _refreshFrequency) * 1000;
 
-            _window.Size = new Size((int)ScreenSize.X, (int)ScreenSize.Y);
+            _window.Size = new Size(screenX, screenY);
             _window.Text = _title;
             
             // setup callbacks
             _window.Paint += Renderer;
             _window.FormClosing += OnFormClosing;
 
+            _window.KeyDown += OnKeyDown;
+            _window.KeyUp += OnKeyUp;
+
             _gameLoop = new Thread(() => GameLoop(_cts.Token));
             _gameLoop.Start();
 
             Application.Run(_window);
+        }
+
+        private void OnKeyDown(object? sender, KeyEventArgs e) 
+        {
+            KeysDown.TryAdd(e.KeyCode, e.KeyValue);
+        }
+
+        private void OnKeyUp(object? sender, KeyEventArgs e) 
+        { 
+            KeysDown.TryRemove(e.KeyCode, out var _);
         }
 
         private void GameLoop(CancellationToken ct)
@@ -81,6 +96,7 @@ namespace SharpEngine
                         var frameRate = frameRateQueue.Sum() / frameRateQueue.Count;
                         _window.Text = _title + $" {frameRate:0.00} fps";
                         frameRateQueue.Clear();
+                        GC.Collect();
                     }
                      
                 });
@@ -143,8 +159,8 @@ namespace SharpEngine
                 case Type t when t == typeof(IShapeElement):
                     ShapeElements.TryAdd(element.Tag, (IShapeElement)element);
                     break;
-                case Type t when t == typeof(ISpriteElement):
-                    SpriteElements.TryAdd(element.Tag, (ISpriteElement)element);
+                case Type t when t == typeof(IImageElement):
+                    SpriteElements.TryAdd(element.Tag, (IImageElement)element);
                     break;
                 default:
                     throw new NotImplementedException($"registering type '{typeof(T)}' is not implemented");
@@ -167,10 +183,10 @@ namespace SharpEngine
                         ShapeElements.TryAdd(element.Tag, (IShapeElement)element);
                     }
                     break;
-                case Type t when t == typeof(ISpriteElement):
+                case Type t when t == typeof(IImageElement):
                     foreach (var element in elements)
                     {
-                        SpriteElements.TryAdd(element.Tag, (ISpriteElement)element);
+                        SpriteElements.TryAdd(element.Tag, (IImageElement)element);
                     }
                     break;
                 default:
@@ -188,7 +204,7 @@ namespace SharpEngine
                 case Type t when t == typeof(IShapeElement):
                     ShapeElements.Remove(element.Tag, out var _);
                     break;
-                case Type t when t == typeof(ISpriteElement):
+                case Type t when t == typeof(IImageElement):
                     SpriteElements.Remove(element.Tag, out var _);
                     break;
                 default:

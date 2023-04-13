@@ -5,7 +5,6 @@ using SharpEngine.Drawing.Interfaces;
 using SharpEngine.Math;
 using System.Collections.Concurrent;
 using System.Drawing;
-using System.Numerics;
 
 namespace SharpEngine
 {
@@ -25,7 +24,7 @@ namespace SharpEngine
         List<IShapeElement> smileyFace = new();
         ConcurrentBag<IShapeElement> rectangles = new();
 
-        ISpriteElement mario;
+        IImageElement mario;
 
         Random rand = new Random();
 
@@ -68,7 +67,6 @@ namespace SharpEngine
             smileyFace.Add(new EllipseElement("pupilRight", pupilPositionRight, pupilSize, pupilColour, 1));
 
             mario = ElementFactory.CreateSpriteFromFile("mario", "Assets/mario.png", new Vector2f(100, 100), 1);
-            mario.Size *= 0.1f;
             mario.Register();
         }
 
@@ -78,10 +76,26 @@ namespace SharpEngine
 
             //frameTimeText.Value = $"frame: {frame} - time {elapsedTime}";
 
-            if (frame % 20 == 0)
+            //if (frame % 20 == 0)
+            //{
+            //    mario.RotateFlip(90);
+            //}
+
+            if(KeysDown.TryRemove(System.Windows.Forms.Keys.R, out var _))
             {
                 mario.RotateFlip(90);
             }
+
+            if (KeysDown.TryRemove(System.Windows.Forms.Keys.E, out var _))
+            {
+                mario.RotateFlip(-90);
+            }
+
+            if (KeysDown.TryRemove(System.Windows.Forms.Keys.X, out var _))
+            {
+                mario.RotateFlip(0, true);
+            }
+
             //angle += 0.5f;
             //if(angle >= 360f)
             //{

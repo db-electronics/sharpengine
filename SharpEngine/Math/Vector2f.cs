@@ -38,7 +38,7 @@ namespace SharpEngine.Math
             return new Vector2f(Y, X);
         }
 
-        public void Swap()
+        public void SwapXY()
         {
             (X, Y) = (Y, X);
         }
