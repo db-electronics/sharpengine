@@ -33,7 +33,8 @@ namespace SharpEngine
         public Color BackgroundColour { get; set; } = Color.Black;
         private static ConcurrentDictionary<string, ITextElement> TextElements { get; set; } = new();
         private static ConcurrentDictionary<string, IShapeElement> ShapeElements { get; set; } = new();
-        private static ConcurrentDictionary<string, IImageElement> SpriteElements { get; set; } = new();
+        private static ConcurrentDictionary<string, IImageElement> ImageElements { get; set; } = new();
+        private static ConcurrentDictionary<string, Bitmap> Images { get; set; } = new();
 
         public ConcurrentDictionary<Keys, int> KeysDown { get; set; } = new();
 
@@ -137,9 +138,18 @@ namespace SharpEngine
                 
             }
 
-            foreach(var s in SpriteElements.Values.Where(t => t.IsVisible).OrderByDescending(t => t.Priority))
+            foreach(var s in ImageElements.Values.Where(t => t.IsVisible).OrderByDescending(t => t.Priority))
             {
-                g.DrawImage(s.Bitmap, s.Position.X, s.Position.Y, s.Size.X, s.Size.Y);
+                var bmp = Images[s.Tag];
+                if (s.Redraw)
+                {
+
+                }
+                else
+                {
+                    g.DrawImage(bmp, s.Position.X, s.Position.Y, s.Size.X, s.Size.Y);
+                }
+                
             }
 
             // draw all text elements
@@ -149,7 +159,7 @@ namespace SharpEngine
             }
         }
 
-        public static void RegisterElement<T>(T element) where T : IDrawingElement
+        public static void RegisterElement<T>(T element, string path = "") where T : IDrawingElement
         {
             switch(typeof(T))
             {
@@ -160,7 +170,9 @@ namespace SharpEngine
                     ShapeElements.TryAdd(element.Tag, (IShapeElement)element);
                     break;
                 case Type t when t == typeof(IImageElement):
-                    SpriteElements.TryAdd(element.Tag, (IImageElement)element);
+                    ImageElements.TryAdd(element.Tag, (IImageElement)element);
+                    Image img = Image.FromFile(path);
+                    Images.TryAdd(element.Tag, new Bitmap(img));
                     break;
                 default:
                     throw new NotImplementedException($"registering type '{typeof(T)}' is not implemented");
@@ -186,7 +198,7 @@ namespace SharpEngine
                 case Type t when t == typeof(IImageElement):
                     foreach (var element in elements)
                     {
-                        SpriteElements.TryAdd(element.Tag, (IImageElement)element);
+                        ImageElements.TryAdd(element.Tag, (IImageElement)element);
                     }
                     break;
                 default:
@@ -205,7 +217,7 @@ namespace SharpEngine
                     ShapeElements.Remove(element.Tag, out var _);
                     break;
                 case Type t when t == typeof(IImageElement):
-                    SpriteElements.Remove(element.Tag, out var _);
+                    ImageElements.Remove(element.Tag, out var _);
                     break;
                 default:
                     throw new NotImplementedException($"Destroying type '{typeof(T)}' is not implemented");
@@ -217,6 +229,52 @@ namespace SharpEngine
             _timer.Stop();
             _cts.Cancel();
             OnDestroy();
+        }
+
+        private Bitmap RotateFlip(Image img, IImageElement element, float angle, bool mirror = false)
+        {
+            var center = element.Center;
+            switch (angle)
+            {
+                case 360f:
+                case 0f:
+                    if (mirror)
+                        img.RotateFlip(RotateFlipType.RotateNoneFlipX);
+                    else
+                        img.RotateFlip(RotateFlipType.RotateNoneFlipNone);
+                    break;
+                case -270f:
+                case 90f:
+                    if (mirror)
+                        img.RotateFlip(RotateFlipType.Rotate90FlipX);
+                    else
+                        img.RotateFlip(RotateFlipType.Rotate90FlipNone);
+                    element.Size.SwapXY();
+                    element.Center = center;
+                    break;
+                case -180f:
+                case 180f:
+                    if (mirror)
+                        img.RotateFlip(RotateFlipType.Rotate180FlipX);
+                    else
+                        img.RotateFlip(RotateFlipType.Rotate180FlipNone);
+                    break;
+                case -90f:
+                case 270f:
+                    if (mirror)
+                        img.RotateFlip(RotateFlipType.Rotate270FlipX);
+                    else
+                        img.RotateFlip(RotateFlipType.Rotate270FlipNone);
+                    element.Size.SwapXY();
+                    element.Center = center;
+                    break;
+                default:
+                    if (mirror)
+                        img.RotateFlip(RotateFlipType.RotateNoneFlipX);
+                    //_image = RotateAnyAngle(angle);
+                    break;
+            }
+            return new Bitmap(img);
         }
     }
 }

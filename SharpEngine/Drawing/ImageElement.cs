@@ -8,7 +8,14 @@ namespace SharpEngine.Drawing
         public string Tag { get; set; }
         public bool IsVisible { get; set; } = true;
         public int Priority { get; set; }
+        public string Path { get; set; }
+        public float RotationAngle { get; set; }
+        public bool FlipX { get; set; }
+        public bool FlipY { get; set; }
+        public bool Redraw { get; set; }
+
         public Vector2f Position { get; set; }
+
         private Vector2f _center;
         public Vector2f Center
         {
@@ -22,22 +29,27 @@ namespace SharpEngine.Drawing
             get { return _size; }
             set { _size = value; Position = _center - (_size / 2); }
         }
-        public Bitmap Bitmap { get; set; }
 
-        private Image _image;
-        //private Image _original;
-        private Semaphore _semaphore = new(1,1);
-
-        public ImageElement(string tag, string path, Vector2f center, int priority)
+        public ImageElement(string tag, string path, Vector2f center, Vector2f size, int priority)
         {
-            _image = Image.FromFile(path);
+
+            if(!File.Exists(path))
+                throw new FileNotFoundException(path);
+
+            Tag = tag;
+            Path = path;
+            RotationAngle = 0f;
+            FlipX = false;
+            FlipY = false;
+
             Priority = priority;
-            _size = new Vector2f(_image.Width, _image.Height);
+            _size = size;
             _center = center;
             Position = center - (_size / 2);
-            Tag = tag;
             
-            Bitmap = new Bitmap(_image);
+            Redraw = true;
+
+            //Bitmap = new Bitmap(_image);
             //Bitmap.MakeTransparent(Color.Transparent);
         }
 
@@ -108,7 +120,7 @@ namespace SharpEngine.Drawing
 
         public void Register()
         {
-            SharpEngine.RegisterElement<IImageElement>(this);
+            SharpEngine.RegisterElement<IImageElement>(this, this.Path);
         }
 
         public void Dispose()
