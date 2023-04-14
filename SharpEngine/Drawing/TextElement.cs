@@ -29,17 +29,16 @@ namespace SharpEngine.Drawing
 
         public Brush Brush { get; private set; }
 
-        public TextElement(string tag, string value, Vector2f position, Vector2f size, Color colour)
+        public TextElement(string tag, string value, Vector2f position, Vector2f size, Color colour, int priority = 0)
         {
             Tag = tag;
             Value = value;
             Position = position;
+            Priority = priority;
             Font = new Font("Courier New", size.X, FontStyle.Regular);
             _colour = colour;
             Brush = new SolidBrush(colour);
             _size = size;
-
-            SharpEngine.RegisterElement<ITextElement>(this);
         }
 
         public void Register()

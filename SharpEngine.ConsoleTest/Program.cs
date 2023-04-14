@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.VisualBasic;
 using SharpEngine;
 using SharpEngine.Drawing;
 using SharpEngine.Drawing.Interfaces;
@@ -41,13 +42,13 @@ namespace SharpEngine
             Console.WriteLine("on load");
             BackgroundColour = Color.Black;
 
-            infoText = new TextElement("infoText", "", new Vector2f(10, 10), new Vector2f(15), Color.White);
-            //frameTimeText = new TextElement("frame", "frame time: ", new Vector2f(10, 30), Color.CadetBlue);
+            infoText = ElementFactory.CreateTextElement("infoText", "", new Vector2f(10, 10), new Vector2f(15), Color.White);
+            infoText.Register();
 
             var headSize = new Vector2f(200);
             var headPosition = new Vector2f(ScreenSize.X / 2, ScreenSize.Y / 2);
 
-            var headEllipse = new EllipseElement("head", headPosition, headSize, Color.BlueViolet, 3);
+            var headEllipse = ElementFactory.CreateEllipseElement("head", headPosition, headSize, Color.BlueViolet, 3);
             smileyFace.Add(headEllipse);
 
             var eyeOffset = 40f;
@@ -56,17 +57,19 @@ namespace SharpEngine
             var eyePositionRight = headEllipse.Center + new Vector2f(eyeOffset, -eyeOffset);
 
             var eyeColour = Color.White;
-            smileyFace.Add(new EllipseElement("eyeLeft", eyePositionLeft, eyeSize, eyeColour, 2));
-            smileyFace.Add(new EllipseElement("eyeRight", eyePositionRight, eyeSize, eyeColour, 2));
+            smileyFace.Add(ElementFactory.CreateEllipseElement("eyeLeft", eyePositionLeft, eyeSize, eyeColour, 2));
+            smileyFace.Add(ElementFactory.CreateEllipseElement("eyeRight", eyePositionRight, eyeSize, eyeColour, 2));
 
             var pupilColour = Color.Black;
             var pupilSize = eyeSize / 2;
             var pupilPositionLeft = eyePositionLeft;
             var pupilPositionRight = eyePositionRight;
-            smileyFace.Add(new EllipseElement("pupilLeft", pupilPositionLeft, pupilSize, pupilColour, 1));
-            smileyFace.Add(new EllipseElement("pupilRight", pupilPositionRight, pupilSize, pupilColour, 1));
+            smileyFace.Add(ElementFactory.CreateEllipseElement("pupilLeft", pupilPositionLeft, pupilSize, pupilColour, 1));
+            smileyFace.Add(ElementFactory.CreateEllipseElement("pupilRight", pupilPositionRight, pupilSize, pupilColour, 1));
 
-            mario = ElementFactory.CreateSpriteFromFile("mario", "Assets/mario.png", new Vector2f(100, 100), 1);
+            smileyFace.ForEach(s => s.Register());
+
+            mario = ElementFactory.CreateImageFromFile("mario", "Assets/mario.png", new Vector2f(100, 100), 1);
             mario.Register();
         }
 
@@ -94,6 +97,26 @@ namespace SharpEngine
             if (KeysDown.TryRemove(System.Windows.Forms.Keys.X, out var _))
             {
                 mario.RotateFlip(0, true);
+            }
+
+            if (KeysDown.TryRemove(System.Windows.Forms.Keys.Right, out var _))
+            {
+                mario.Center += new Vector2f(3, 0);
+            }
+
+            if (KeysDown.TryRemove(System.Windows.Forms.Keys.Left, out var _))
+            {
+                mario.Center += new Vector2f(-3, 0);
+            }
+
+            if (KeysDown.TryRemove(System.Windows.Forms.Keys.Up, out var _))
+            {
+                mario.Center += new Vector2f(0, -3);
+            }
+
+            if (KeysDown.TryRemove(System.Windows.Forms.Keys.Down, out var _))
+            {
+                mario.Center += new Vector2f(0, 3);
             }
 
             //angle += 0.5f;

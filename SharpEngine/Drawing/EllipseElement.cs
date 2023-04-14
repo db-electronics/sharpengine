@@ -44,7 +44,6 @@ namespace SharpEngine.Drawing
             Colour = colour;
             Brush = new SolidBrush(colour);
             Priority = priority;
-            SharpEngine.RegisterElement<IShapeElement>(this);
         }
 
         public void Register()

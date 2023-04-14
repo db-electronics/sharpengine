@@ -1,7 +1,5 @@
 ﻿using SharpEngine.Drawing.Interfaces;
 using SharpEngine.Math;
-using System.Drawing;
-using System.IO;
 
 namespace SharpEngine.Drawing
 {
