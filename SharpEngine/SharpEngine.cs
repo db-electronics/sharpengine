@@ -138,16 +138,16 @@ namespace SharpEngine
                 
             }
 
-            foreach(var s in ImageElements.Values.Where(t => t.IsVisible).OrderByDescending(t => t.Priority))
+            foreach(var imgElement in ImageElements.Values.Where(t => t.IsVisible).OrderByDescending(t => t.Priority))
             {
-                var bmp = Images[s.Tag];
-                if (s.Redraw)
+                if(Images.TryGetValue(imgElement.Tag, out var img))
                 {
-
-                }
-                else
-                {
-                    g.DrawImage(bmp, s.Position.X, s.Position.Y, s.Size.X, s.Size.Y);
+                    if (imgElement.Redraw)
+                    {
+                        RedrawImage(img, imgElement);
+                        imgElement.Redraw = false;
+                    }
+                    g.DrawImage(img, imgElement.Position.X, imgElement.Position.Y, imgElement.Size.X, imgElement.Size.Y);
                 }
                 
             }
@@ -231,50 +231,46 @@ namespace SharpEngine
             OnDestroy();
         }
 
-        private Bitmap RotateFlip(Image img, IImageElement element, float angle, bool mirror = false)
+        private static void RedrawImage(Bitmap img, IImageElement element)
         {
-            var center = element.Center;
-            switch (angle)
+            switch (element.DifferenceAngle)
             {
                 case 360f:
                 case 0f:
-                    if (mirror)
+                    if (element.FlipX)
                         img.RotateFlip(RotateFlipType.RotateNoneFlipX);
                     else
                         img.RotateFlip(RotateFlipType.RotateNoneFlipNone);
                     break;
                 case -270f:
                 case 90f:
-                    if (mirror)
+                    if (element.FlipX)
                         img.RotateFlip(RotateFlipType.Rotate90FlipX);
                     else
                         img.RotateFlip(RotateFlipType.Rotate90FlipNone);
-                    element.Size.SwapXY();
-                    element.Center = center;
+                    element.SwapXY();
                     break;
                 case -180f:
                 case 180f:
-                    if (mirror)
+                    if (element.FlipX)
                         img.RotateFlip(RotateFlipType.Rotate180FlipX);
                     else
                         img.RotateFlip(RotateFlipType.Rotate180FlipNone);
                     break;
                 case -90f:
                 case 270f:
-                    if (mirror)
+                    if (element.FlipX)
                         img.RotateFlip(RotateFlipType.Rotate270FlipX);
                     else
                         img.RotateFlip(RotateFlipType.Rotate270FlipNone);
                     element.Size.SwapXY();
-                    element.Center = center;
                     break;
                 default:
-                    if (mirror)
+                    if (element.FlipX)
                         img.RotateFlip(RotateFlipType.RotateNoneFlipX);
                     //_image = RotateAnyAngle(angle);
                     break;
             }
-            return new Bitmap(img);
         }
     }
 }

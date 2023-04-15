@@ -6,6 +6,7 @@ using SharpEngine.Drawing.Interfaces;
 using SharpEngine.Math;
 using System.Collections.Concurrent;
 using System.Drawing;
+using System.Runtime.CompilerServices;
 
 namespace SharpEngine
 {
@@ -26,6 +27,7 @@ namespace SharpEngine
         ConcurrentBag<IShapeElement> rectangles = new();
 
         IImageElement mario;
+        List<IImageElement> images = new();
 
         Random rand = new Random();
 
@@ -69,7 +71,7 @@ namespace SharpEngine
 
             smileyFace.ForEach(s => s.Register());
 
-            mario = ElementFactory.CreateImageFromFile("mario", "Assets/mario.png", new Vector2f(100, 100), 1);
+            mario = ElementFactory.CreateImageFromFile("mario", "Assets/mario.png", new Vector2f(100, 100), new Vector2f(86, 110), 1);
             mario.Register();
         }
 
@@ -79,12 +81,40 @@ namespace SharpEngine
 
             //frameTimeText.Value = $"frame: {frame} - time {elapsedTime}";
 
-            //if (frame % 20 == 0)
-            //{
-            //    mario.RotateFlip(90);
-            //}
+            if (frame % 5 == 0)
+            {
+                // spawn marios
+                var newImg = ElementFactory.CreateImageFromFile(
+                    Guid.NewGuid().ToString(),
+                    "Assets/mario.png",
+                    new Vector2f(rand.Next((int)ScreenSize.X), rand.Next((int)ScreenSize.Y)),
+                    new Vector2f(86, 110),
+                    1);
+                newImg.Size *= (float)rand.NextDouble();
+                newImg.Register();
+                images.Add(newImg);
 
-            if(KeysDown.TryRemove(System.Windows.Forms.Keys.R, out var _))
+                infoText.Value = $"mario count: {images.Count}";
+            }
+
+            if(frame % 1 == 0)
+            {
+                int motion = 2;
+                foreach (var img in images)
+                {
+                    var newCenter = new Vector2f(rand.Next(-motion, motion+1), rand.Next(-motion, motion+1));
+                    img.Center += newCenter;
+                }
+
+                var newSmileyCenter = new Vector2f(rand.Next(-motion, motion + 1), rand.Next(-motion, motion + 1));
+                foreach(var item in smileyFace)
+                {
+                    item.Center += newSmileyCenter;
+                }
+            }
+
+
+            if (KeysDown.TryRemove(System.Windows.Forms.Keys.R, out var _))
             {
                 mario.RotateFlip(90);
             }

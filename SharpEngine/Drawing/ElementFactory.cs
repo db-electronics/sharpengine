@@ -19,9 +19,9 @@ namespace SharpEngine.Drawing
             return new RectangleElement(tag, center, size, colour, priority);
         }
 
-        public static ImageElement CreateImageFromFile(string tag, string path, Vector2f center, int priority = 0)
+        public static ImageElement CreateImageFromFile(string tag, string path, Vector2f center, Vector2f size, int priority = 0)
         {
-            return new ImageElement(tag, path, center, priority);
+            return new ImageElement(tag, path, center, size, priority);
         }
     }
 }
