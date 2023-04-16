@@ -9,11 +9,9 @@ namespace SharpEngine.Drawing
         public bool IsVisible { get; set; } = true;
         public int Priority { get; set; }
         public string Path { get; set; }
-        public float CurrentAngle { get; private set; }
-        public float DifferenceAngle { get; private set; }
+        public float Angle { get; set; }
         public bool FlipX { get; set; }
         public bool FlipY { get; set; }
-        public bool Redraw { get; set; }
 
         public Vector2f Position { get; set; }
 
@@ -31,9 +29,6 @@ namespace SharpEngine.Drawing
             set { _size = value; Position = _center - (_size / 2); }
         }
 
-        private float _currentAngle;
-        internal float _diffAngle;
-
         public ImageElement(string tag, string path, Vector2f center, Vector2f size, int priority)
         {
 
@@ -42,9 +37,7 @@ namespace SharpEngine.Drawing
 
             Tag = tag;
             Path = path;
-            CurrentAngle = 0f;
-            _currentAngle = 0f;
-            _diffAngle = 0f;
+            Angle = 0f;
             FlipX = false;
             FlipY = false;
 
@@ -53,7 +46,6 @@ namespace SharpEngine.Drawing
             _center = center;
             Position = center - (_size / 2);
             
-            Redraw = true;
 
             //Bitmap = new Bitmap(_image);
             //Bitmap.MakeTransparent(Color.Transparent);
@@ -67,11 +59,20 @@ namespace SharpEngine.Drawing
 
         }
 
-        public void RotateFlip(float absAngle, bool mirror = false)
+        public void SetAngle(float angle, bool mirror = false)
         {
-            DifferenceAngle = absAngle - CurrentAngle;
+            if (angle > 360)
+                angle -= 360;
+
+            float diffAngle = System.Math.Abs(angle - Angle);
+            
+            Angle = angle;
             FlipX = mirror;
-            Redraw = true;
+
+            if(diffAngle == 90f || diffAngle == 270)
+            {
+                SwapXY();
+            }
         }
 
         //private Image RotateAnyAngle(float angle)

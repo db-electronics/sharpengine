@@ -32,6 +32,7 @@ namespace SharpEngine
         Random rand = new Random();
 
         float angle = 0f;
+        Semaphore _sem = new(1, 1);
 
         public TestEngine()
             :base(800, 600, 60f, "Test Game")
@@ -78,10 +79,9 @@ namespace SharpEngine
         public override void OnUpdate(float elapsedTime, int frame)
         {
             //Console.WriteLine($"frame: {frame} - time {elapsedTime}");
-
             //frameTimeText.Value = $"frame: {frame} - time {elapsedTime}";
 
-            if (frame % 5 == 0)
+            if (frame % 2 == 0)
             {
                 // spawn marios
                 var newImg = ElementFactory.CreateImageFromFile(
@@ -116,17 +116,19 @@ namespace SharpEngine
 
             if (KeysDown.TryRemove(System.Windows.Forms.Keys.R, out var _))
             {
-                mario.RotateFlip(90);
+                angle += 90f;
+                mario.SetAngle(angle);
             }
 
             if (KeysDown.TryRemove(System.Windows.Forms.Keys.E, out var _))
             {
-                mario.RotateFlip(-90);
+                angle -= 90f;
+                mario.SetAngle(angle);
             }
 
             if (KeysDown.TryRemove(System.Windows.Forms.Keys.X, out var _))
             {
-                mario.RotateFlip(0, true);
+                mario.SetAngle(0, !mario.FlipX);
             }
 
             if (KeysDown.TryRemove(System.Windows.Forms.Keys.Right, out var _))

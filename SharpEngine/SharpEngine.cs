@@ -4,6 +4,7 @@ using SharpEngine.Drawing.Interfaces;
 using System.Collections.Concurrent;
 using System.Xml.Linq;
 using System.Collections.Generic;
+using System.Drawing.Text;
 
 namespace SharpEngine
 {
@@ -12,7 +13,7 @@ namespace SharpEngine
         public Vector2f ScreenSize { get; set; }
 
         private readonly string _title = "Sharp Engine";
-        private readonly Canvas _window = new ();
+        private readonly Canvas _window = new();
 
         private readonly float _refreshFrequency;
         private readonly CancellationTokenSource _cts = new();
@@ -27,6 +28,8 @@ namespace SharpEngine
         public abstract void OnUpdate(float elapsedTime, int frameCount);
         public abstract void OnDestroy();
 
+        private readonly object _frameLock = new ();
+
         /// <summary>
         /// 
         /// </summary>
@@ -34,7 +37,23 @@ namespace SharpEngine
         private static ConcurrentDictionary<string, ITextElement> TextElements { get; set; } = new();
         private static ConcurrentDictionary<string, IShapeElement> ShapeElements { get; set; } = new();
         private static ConcurrentDictionary<string, IImageElement> ImageElements { get; set; } = new();
-        private static ConcurrentDictionary<string, Bitmap> Images { get; set; } = new();
+        private static ConcurrentDictionary<string, ImageData> Images { get; set; } = new();
+
+        class ImageData
+        {
+            public Bitmap Bitmap { get; set; }
+            public float Angle { get; set; }
+            public bool FlipX { get; set; }
+            public bool FlipY { get; set; }
+
+            public ImageData(Bitmap bitmap)
+            {
+                Bitmap = bitmap;
+                Angle = 0f;
+                FlipX = false;
+                FlipY = false;
+            }
+        }
 
         public ConcurrentDictionary<Keys, int> KeysDown { get; set; } = new();
 
@@ -140,16 +159,14 @@ namespace SharpEngine
 
             foreach(var imgElement in ImageElements.Values.Where(t => t.IsVisible).OrderByDescending(t => t.Priority))
             {
-                if(Images.TryGetValue(imgElement.Tag, out var img))
+                if(Images.TryGetValue(imgElement.Tag, out var imageData))
                 {
-                    if (imgElement.Redraw)
+                    if(imageData.Angle != imgElement.Angle || imageData.FlipX != imgElement.FlipX || imageData.FlipX != imgElement.FlipX)
                     {
-                        RedrawImage(img, imgElement);
-                        imgElement.Redraw = false;
+                        RedrawImage(imageData, imgElement.Angle, imgElement.FlipX, imgElement.FlipY);
                     }
-                    g.DrawImage(img, imgElement.Position.X, imgElement.Position.Y, imgElement.Size.X, imgElement.Size.Y);
+                    g.DrawImage(imageData.Bitmap, imgElement.Position.X, imgElement.Position.Y, imgElement.Size.X, imgElement.Size.Y);
                 }
-                
             }
 
             // draw all text elements
@@ -172,7 +189,7 @@ namespace SharpEngine
                 case Type t when t == typeof(IImageElement):
                     ImageElements.TryAdd(element.Tag, (IImageElement)element);
                     Image img = Image.FromFile(path);
-                    Images.TryAdd(element.Tag, new Bitmap(img));
+                    Images.TryAdd(element.Tag, new ImageData(new Bitmap(img))) ;
                     break;
                 default:
                     throw new NotImplementedException($"registering type '{typeof(T)}' is not implemented");
@@ -231,43 +248,50 @@ namespace SharpEngine
             OnDestroy();
         }
 
-        private static void RedrawImage(Bitmap img, IImageElement element)
+        private static void RedrawImage(ImageData imageData, float newAngle, bool flipX, bool flipY)
         {
-            switch (element.DifferenceAngle)
+            float rotateBy = newAngle - imageData.Angle;
+            bool mirror = imageData.FlipX ^ flipX;
+            if (rotateBy > 360)
+                rotateBy -= 360;
+
+            // store new state
+            imageData.Angle = newAngle;
+            imageData.FlipX = flipX;
+
+            switch (rotateBy)
             {
                 case 360f:
                 case 0f:
-                    if (element.FlipX)
-                        img.RotateFlip(RotateFlipType.RotateNoneFlipX);
+                    if (mirror)
+                        imageData.Bitmap.RotateFlip(RotateFlipType.RotateNoneFlipX);
                     else
-                        img.RotateFlip(RotateFlipType.RotateNoneFlipNone);
+                        imageData.Bitmap.RotateFlip(RotateFlipType.RotateNoneFlipNone);
                     break;
                 case -270f:
                 case 90f:
-                    if (element.FlipX)
-                        img.RotateFlip(RotateFlipType.Rotate90FlipX);
+                    if (mirror)
+                        imageData.Bitmap.RotateFlip(RotateFlipType.Rotate90FlipX);
                     else
-                        img.RotateFlip(RotateFlipType.Rotate90FlipNone);
-                    element.SwapXY();
+                        imageData.Bitmap.RotateFlip(RotateFlipType.Rotate90FlipNone);
                     break;
                 case -180f:
                 case 180f:
-                    if (element.FlipX)
-                        img.RotateFlip(RotateFlipType.Rotate180FlipX);
+                    if (mirror)
+                        imageData.Bitmap.RotateFlip(RotateFlipType.Rotate180FlipX);
                     else
-                        img.RotateFlip(RotateFlipType.Rotate180FlipNone);
+                        imageData.Bitmap.RotateFlip(RotateFlipType.Rotate180FlipNone);
                     break;
                 case -90f:
                 case 270f:
-                    if (element.FlipX)
-                        img.RotateFlip(RotateFlipType.Rotate270FlipX);
+                    if (mirror)
+                        imageData.Bitmap.RotateFlip(RotateFlipType.Rotate270FlipX);
                     else
-                        img.RotateFlip(RotateFlipType.Rotate270FlipNone);
-                    element.Size.SwapXY();
+                        imageData.Bitmap.RotateFlip(RotateFlipType.Rotate270FlipNone);
                     break;
                 default:
-                    if (element.FlipX)
-                        img.RotateFlip(RotateFlipType.RotateNoneFlipX);
+                    if (mirror)
+                        imageData.Bitmap.RotateFlip(RotateFlipType.RotateNoneFlipX);
                     //_image = RotateAnyAngle(angle);
                     break;
             }
